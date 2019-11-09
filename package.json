@@ -10,7 +10,7 @@
     "express": "^4.17.1"
   },
   "scripts": {
-    "start": "node heroko.js"
+    "start": "node server.js"
   },
   "engines": {
     "node": "10.16.0",
