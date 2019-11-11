@@ -42,6 +42,11 @@ app.use((req, res, next) => {
     next();
 });
 
+//Introduction message
+app.get('/', function (req, res) {
+    res.send("Node server is up.");
+});
+
 app.use("/products", productsRoutes);
 app.use("/users", userRoutes);
 
