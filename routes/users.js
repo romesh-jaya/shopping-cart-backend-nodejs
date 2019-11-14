@@ -44,7 +44,7 @@ router.post("/signup", (req, res, next) => {
 
 router.post("/login", (req, res, next) => {
   let fetchedUser;
-  User.findOne({ email: req.body.email })
+  User.findOne({ email: req.body.email.toLowerCase() })
     .then(user => {
       if (!user) {
         return res.status(401).json({
@@ -88,7 +88,7 @@ router.post("/login", (req, res, next) => {
 router.post("/refresh-token", (req, res, next) => {
   //note: use any error code other than 401, otherwise it will conflict with the logic in 
   //auth-interceptor in the client
-  User.findOne({ email: req.body.email })
+  User.findOne({ email: req.body.email.toLowerCase() })
     .then(user => {
       if (!user) {
         return res.status(409).json({
