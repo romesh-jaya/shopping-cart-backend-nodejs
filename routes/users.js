@@ -7,7 +7,7 @@ const User = require("../models/user");
 
 const router = express.Router();
 
-router.post("/signup", (req, res, next) => {
+router.post("/signup", (req, res) => {
   bcryptjs.hash(req.body.password, 10).then(hash => {
     const user = new User({
       email: req.body.email,
@@ -16,7 +16,7 @@ router.post("/signup", (req, res, next) => {
     });
     user
       .save()
-      .then(result => {
+      .then(() => {
         const token = jwt.sign(
           { id: user._id },
           process.env.HASHSECRET,
@@ -42,7 +42,7 @@ router.post("/signup", (req, res, next) => {
   });
 });
 
-router.post("/login", (req, res, next) => {
+router.post("/login", (req, res) => {
   let fetchedUser;
   User.findOne({ email: req.body.email.toLowerCase() })
     .then(user => {
@@ -120,7 +120,7 @@ router.post("/refresh-token", (req, res, next) => {
 });
 
 
-router.post("/change-password", (req, res, next) => {
+router.post("/change-password", (req, res) => {
   var decoded;
   try {
     const token = req.headers.authorization.split(" ")[1];
@@ -129,60 +129,59 @@ router.post("/change-password", (req, res, next) => {
     return res.status(401).json({ message: "Authentication failed!" });
   }
 
-  User.findById
-    (decoded.id).then(fetchedUser => {
-      if (!fetchedUser) {
-        return res.status(401).json({ message: "Logged in User cannot be found in database!" });
+  User.findById(decoded.id).then(fetchedUser => {
+    if (!fetchedUser) {
+      return res.status(401).json({ message: "Logged in User cannot be found in database!" });
+    }
+
+    bcryptjs.compare(req.body.oldPassword, fetchedUser.password, function (err, isMatch) {
+      if (err) {
+        return res.status(401).json({ message: "Error in comparing passwords!" });
       }
-
-      bcryptjs.compare(req.body.old_password, fetchedUser.password, function (err, isMatch) {
-        if (err) {
-          return res.status(401).json({ message: "Error in comparing passwords!" });
-        }
-        if (!isMatch) {
-          return res.status(401).json({ message: "Entered current password is incorrect!" });
-        }
-      });
-
-      bcryptjs.hash(req.body.password, 10).then(hash => {
-        const user = new User({
-          _id: fetchedUser._id,
-          email: fetchedUser.email,
-          password: hash,
-          isAdmin: fetchedUser.isAdmin
-        });
-        User
-          .updateOne({ _id: user._id }, user)
-          .then(result => {
-            const token = jwt.sign(
-              { id: user._id },
-              process.env.HASHSECRET,
-              { expiresIn: process.env.TOKENEXPIRATION }
-            );
-            const refreshToken = jwt.sign(
-              { id: fetchedUser._id },
-              process.env.REFRESHSECRET,
-              { expiresIn: process.env.REFRESHTOKENEXPIRATION }
-            );
-            res.status(201).json({
-              message: "Password changed!",
-              token: token,
-              expiresIn: 3600,
-              isAdmin: user.isAdmin,
-              refreshToken: refreshToken
-            });
-          })
-          .catch(error => {
-            res.status(500).json({
-              message: error.message
-            });
-          });
-      });
+      if (!isMatch) {
+        return res.status(401).json({ message: "Entered current password is incorrect!" });
+      }
     });
+
+    bcryptjs.hash(req.body.password, 10).then(hash => {
+      const user = new User({
+        _id: fetchedUser._id,
+        email: fetchedUser.email,
+        password: hash,
+        isAdmin: fetchedUser.isAdmin
+      });
+      User
+        .updateOne({ _id: user._id }, user)
+        .then(() => {
+          const token = jwt.sign(
+            { id: user._id },
+            process.env.HASHSECRET,
+            { expiresIn: process.env.TOKENEXPIRATION }
+          );
+          const refreshToken = jwt.sign(
+            { id: fetchedUser._id },
+            process.env.REFRESHSECRET,
+            { expiresIn: process.env.REFRESHTOKENEXPIRATION }
+          );
+          res.status(201).json({
+            message: "Password changed!",
+            token: token,
+            expiresIn: 3600,
+            isAdmin: user.isAdmin,
+            refreshToken: refreshToken
+          });
+        })
+        .catch(error => {
+          res.status(500).json({
+            message: error.message
+          });
+        });
+    });
+  });
 });
 
 
-router.get("", checkSuper, (req, res, next) => {
+router.get("", checkSuper, (req, res) => {
   User.find()
     .then(documents => {
       let retArray = [];
@@ -203,8 +202,8 @@ router.get("", checkSuper, (req, res, next) => {
     });
 });
 
-router.delete("/:id", checkSuper, (req, res, next) => {
-  User.deleteOne({ _id: req.params.id }).then(result => {
+router.delete("/:id", checkSuper, (req, res) => {
+  User.deleteOne({ _id: req.params.id }).then(() => {
     res.status(200).json({ message: "user deleted!" });
   })
     .catch(error => {
@@ -214,7 +213,7 @@ router.delete("/:id", checkSuper, (req, res, next) => {
     });
 });
 
-router.patch("/:id", checkSuper, (req, res, next) => {
+router.patch("/:id", checkSuper, (req, res) => {
   User.findById(req.params.id)
     .then(user => {
       if (!user) {
@@ -229,7 +228,7 @@ router.patch("/:id", checkSuper, (req, res, next) => {
         isAdmin: req.body.isAdmin
       });
       User.updateOne({ _id: userSave._id }, userSave)
-        .then(result => {
+        .then(() => {
           res.status(200).json({ message: "Update successful!" });
         })
         .catch(error => {

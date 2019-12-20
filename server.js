@@ -22,7 +22,7 @@ const onError = error => {
   if (error.syscall !== "listen") {
     throw error;
   }
-  const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;
+  const bind = typeof addr === "string" ? "pipe " + addr : "port " + port; // eslint-disable-line 
   switch (error.code) {
     case "EACCES":
       console.error(bind + " requires elevated privileges");

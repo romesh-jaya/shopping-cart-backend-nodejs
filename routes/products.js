@@ -5,7 +5,7 @@ const Product = require("../models/product");
 
 const router = express.Router();
 
-router.post("", checkAdmin, (req, res, next) => {
+router.post("", checkAdmin, (req, res) => {
   const product = new Product({
     name: req.body.name,
     unitPrice: req.body.unitPrice,
@@ -25,7 +25,7 @@ router.post("", checkAdmin, (req, res, next) => {
     });
 });
 
-router.get("", checkAuth, (req, res, next) => {
+router.get("", checkAuth, (req, res) => {
   Product.find()
     .then(documents => {
       res.status(200).json(documents);
@@ -37,7 +37,7 @@ router.get("", checkAuth, (req, res, next) => {
     });
 });
 
-router.patch("/:id", checkAdmin, (req, res, next) => {
+router.patch("/:id", checkAdmin, (req, res) => {
   const product = new Product({
     _id: req.body.serverId,
     name: req.body.name,
@@ -45,7 +45,7 @@ router.patch("/:id", checkAdmin, (req, res, next) => {
     barcode: req.body.barcode
   });
   Product
-    .updateOne({ _id: req.body.serverId }, product).then(result => {
+    .updateOne({ _id: req.body.serverId }, product).then(() => {
       res.status(200).json({ message: "Update successful!" });
     })
     .catch(error => {
@@ -55,9 +55,9 @@ router.patch("/:id", checkAdmin, (req, res, next) => {
     });
 });
 
-router.delete("/:id", checkAdmin, (req, res, next) => {
+router.delete("/:id", checkAdmin, (req, res) => {
   Product
-    .deleteOne({ _id: req.params.id }).then(result => {
+    .deleteOne({ _id: req.params.id }).then(() => {
       res.status(200).json({ message: "product deleted!" });
     })
     .catch(error => {

@@ -10,13 +10,12 @@ module.exports = (req, res, next) => {
     return res.status(401).json({ message: "Authentication failed!" });
   }
 
-  User.findById
-    (decoded.id).then(user => {
-      if (user.email == process.env.ADMINUSER) {
-        next();
-      }
-      else {
-        res.status(401).json({ message: "User is not Super user!" });
-      }
-    });
+  User.findById(decoded.id).then(user => {
+    if (user.email == process.env.ADMINUSER) {
+      next();
+    }
+    else {
+      res.status(401).json({ message: "User is not Super user!" });
+    }
+  });
 };
