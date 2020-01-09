@@ -25,14 +25,117 @@ router.post("", checkAdmin, (req, res) => {
     });
 });
 
+//Pass 4 query params into this method for the case of query, none for populate
 router.get("", checkAuth, (req, res) => {
-  Product.find()
-    .then(documents => {
-      res.status(200).json(documents);
+  const pageSize = +req.query.pagesize;
+  const currentPage = +req.query.currentPage;
+  const queryString = req.query.queryString;
+  const queryForNameFlag = req.query.queryForNameFlag;
+
+  if ((pageSize < 1) || (currentPage < 0)) {
+    return res.status(500).json({
+      message: "Valid pagesize, page no must be specified when querying products"
+    });
+  }
+
+  if (queryString) {
+    if (!queryForNameFlag) {//query by barcode
+      if (isNaN(queryString)) {
+        return res.status(500).json({
+          message: "When querying for barcode, queryString must be a number value"
+        });
+      }
+
+      //Use aggregate as we need to convert barcode column to a number for query purpose and facet for obtaining count
+      Product.aggregate(
+        [
+          { $addFields: { compareStr: { $toString: '$barcode' } } },
+          { $match: { compareStr: new RegExp(queryString) } },
+          {
+            $facet: {
+              'products': [{ $skip: pageSize * currentPage }, { $limit: pageSize }],
+              'totalCount': [
+                {
+                  $count: 'count'
+                }
+              ]
+            }
+          }
+        ]
+      ).then(results => {
+        res.status(200).json({
+          results
+        });
+      }).catch(error => {
+        return res.status(500).json({
+          message: "Retrieving products failed (barcode query) : " + error.message
+        });
+      });
+    }
+    else {//query by name
+      //Use aggregate as we need facet for obtaining count
+      Product.aggregate(
+        [
+          { $match: { name: new RegExp(queryString, 'i') } },
+          {
+            $facet: {
+              'products': [{ $skip: pageSize * currentPage }, { $limit: pageSize }],
+              'totalCount': [
+                {
+                  $count: 'count'
+                }
+              ]
+            }
+          }
+        ]
+      ).then(results => {
+        res.status(200).json({
+          results
+        });
+      }).catch(error => {
+        return res.status(500).json({
+          message: "Retrieving products failed (name query) : " + error.message
+        });
+      });
+    }
+  } else {//no querystring
+    //Use aggregate as we need facet for obtaining count
+    Product.aggregate(
+      [
+        {
+          $facet: {
+            'products': [{ $skip: pageSize * currentPage }, { $limit: pageSize }],
+            'totalCount': [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+      ]
+    ).then(results => {
+      res.status(200).json({
+        results
+      });
+    }).catch(error => {
+      return res.status(500).json({
+        message: "Retrieving products failed (all query) : " + error.message
+      });
+    });
+  }
+});
+
+
+router.get("/:id", (req, res) => {
+  Product.findOne({ name: req.params.id })
+    .then(product => {
+      res.status(200).json({
+        product: product
+      });
     })
     .catch(error => {
-      res.status(500).json({
-        message: "Retrieving products failed : " + error.message
+      return res.status(500).json({
+        message: "Retrieving product failed: " + error.message
       });
     });
 });
