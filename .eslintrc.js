@@ -1,17 +1,15 @@
 module.exports = {
-    "env": {
-        "es6": true,
-        "node": true
-    },
-    "extends": "eslint:recommended",
-    "globals": {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
-    },
-    "parserOptions": {
-        "ecmaVersion": 2018,
-        "sourceType": "module"
-    },
-    "rules": {
-    }
+  extends: ['eslint:recommended', 'prettier'],
+  env: {
+    node: true,
+    es6: true,
+  },
+  rules: {
+    'no-console': 'off',
+    '@typescript-eslint/no-magic-numbers': 'off',
+    'brace-style': 'error',
+  },
+  parserOptions: {
+    sourceType: 'module',
+  },
 };

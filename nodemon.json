@@ -1,6 +1,6 @@
 {
   "env": {
-    "MONGOENDPOINT": "mongodb+srv://rom:rom@cluster0-mbq3n.mongodb.net/node-angular?retryWrites=true",
+    "MONGOENDPOINT": "mongodb://movieshop_floormeat:pwd@cm7.h.filess.io:27018/movieshop_floormeat",
     "HASHSECRET": "fgdfgdfgldfkgjkeer54245465ykdfglkdfglkjdfkgtjl5655465ybgkjcdlgk",
     "REFRESHSECRET": "4345dgfcbnbgjy8u67856745354fvdbfgfhyhui67867785745tdfbgcvgb",
     "ADMINUSER": "admin@ad.com",
